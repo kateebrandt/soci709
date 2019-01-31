@@ -4,15 +4,12 @@
 
 ## Dummy variables and interaction terms - Lecture D
 
-
+# load necessary packages
 library(foreign)
-
-#requires dplyr to run below. It's a really good package, so I recommend installing this using: install.packages("dplyr")
 library(dplyr)
 
 
 #import data
-
 morg = read.dta("./data/morg07_small_1.dta", convert.factors = F)
 
 ##recode race
@@ -62,9 +59,9 @@ mod_2 <- lm(morg$wage_re ~
 summary(mod_2)
 
 # Create model for RACE, SEX, and RACExSEX interaction, Excl: {white, male}
-mod_3 <- lm(morg$wage_re ~ 
+mod_2b <- lm(morg$wage_re ~ 
               morg$re_names + 
               morg$re_sex + 
               morg$re_names:morg$re_sex)
-summary(mod_3)
+summary(mod_2b)
 
