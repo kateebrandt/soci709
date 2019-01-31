@@ -42,6 +42,24 @@ morg$re_names = recode_factor(morg$re_names,
 morg = within(morg, re_names <- relevel(re_names, ref = 'white'))
 
 
-# Create model
-mod_lab6_exclwhite <- lm(morg$wage_re~morg$re_names+morg$sex+morg$age + morg$re_names:morg$sex)
-summary(mod_lab6_exclwhite)
+# Create model for RACE gaps, Excl:white
+mod_race <- lm(morg$wage_re~morg$re_names)
+summary(mod_race)
+
+## set referece grouo for SEX to MALE
+morg$re2 = morg$sex
+morg$re_sex = as.factor(morg$re2)
+morg$re_sex = recode_factor(morg$re_sex, 
+                            `1` = "female",
+                            `2` = "male")
+morg = within(morg, re_sex <- relevel(re_sex, ref = "male"))
+
+
+# Create model for RACE and SEX, Excl: {white, male}
+mod_race_sex_add <- lm(morg$wage_re ~ morg$re_names + morg$re_sex)
+summary(mod_race_sex_add)
+
+# Create model for RACE, SEX, and RACExSEX interaction, Excl: {white, male}
+mod_race_sex_int <- lm(morg$wage_re ~ morg$re_names + morg$re_sex + morg$re_names:morg$re_sex)
+summary(mod_race_sex_int)
+
