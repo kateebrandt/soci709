@@ -56,10 +56,15 @@ morg = within(morg, re_sex <- relevel(re_sex, ref = "male"))
 
 
 # Create model for RACE and SEX, Excl: {white, male}
-mod_2 <- lm(morg$wage_re ~ morg$re_names + morg$re_sex)
+mod_2 <- lm(morg$wage_re ~ 
+              morg$re_names + 
+              morg$re_sex)
 summary(mod_2)
 
 # Create model for RACE, SEX, and RACExSEX interaction, Excl: {white, male}
-mod_3 <- lm(morg$wage_re ~ morg$re_names + morg$re_sex + morg$re_names:morg$re_sex)
+mod_3 <- lm(morg$wage_re ~ 
+              morg$re_names + 
+              morg$re_sex + 
+              morg$re_names:morg$re_sex)
 summary(mod_3)
 
