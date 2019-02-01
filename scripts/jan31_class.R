@@ -65,3 +65,14 @@ mod_2b <- lm(morg$wage_re ~
               morg$re_names:morg$re_sex)
 summary(mod_2b)
 
+# Create model for RACE, SEX, RACExSEX interaction, AGE, and AGE^2. Excl: {white, male} 
+## Generate AGE^2 variable
+morg$age2 = (morg$age)^2
+mod_3 <- lm(morg$wage_re ~ 
+              morg$re_names + 
+              morg$re_sex +
+              morg$age +
+              morg$age2)
+summary(mod_3)
+
+# Create model for RACE, SEX, RACExSEX interaction, AGE, AGE^2, EDUCATION. Excl: {white, male} 
