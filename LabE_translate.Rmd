@@ -1,0 +1,70 @@
+---
+title: "SOCI709 Lab E translate"
+author: "Kate Brandt"
+date: "February 5, 2019"
+output: html_document
+---
+
+KB
+SOCI 709 - Class Feb 5, Lab E
+Translate lab E 2017 .do file
+
+  # // program part
+  # 
+
+Rewrites program if it already exists, creates estols2 regression 
+  # capture program drop estols2 
+  # program define  estols2
+
+N is the sample size (will later be set to 200)
+  # args N 
+Get rid of current data
+  # drop _all
+Take data, N, just specified  
+  # set obs `N'
+Create data values for x:
+  {3 is the true value, but adding in normally distributed error term}
+  # gen x=3*invnorm(uniform())
+
+Generate error term e, normally distributed, and multiply by 15 to increase the variance
+  # //gen e=15*invnorm(uniform())
+  # gen e=15*invibeta(.5, .5, uniform())
+  # global dist="beta"
+
+Generate the data - // and * comment out lines 
+  # //gen y_alt=3*x 
+Create y
+  # gen y=3*x+e
+  # * the correct answer is 3
+Does not let each result of the regression print as the program runs  
+  # quietly reg y x
+
+
+# di "This is the regression estimate of B and the constant"
+# mat list e(b)
+# end
+# 
+# 
+# // run part
+# 
+# clear
+# // prog drop _all
+# 
+# //estols2 50 
+
+
+Globals in STATA are very useful because they keep track of different variables used multiple times in a simulation
+Number of repetitions = 200
+  # global obs 200
+Sample size (N) = 200
+  # global N 200
+
+b represents observations of sample drawn from x data set
+  # simulate b=_b[x],  reps($obs): estols2 $N
+ 
+  # sum
+
+Graph results from these observations, b, using kdensity function
++ 
+  # kdensity b, saving(lec7-sim, replace) ti("Observed Distribution of B, $obs reps") ///
+  # sub("N=${N} , e~${dist} ")
