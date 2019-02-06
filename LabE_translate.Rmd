@@ -27,6 +27,7 @@ Create data values for x:
   # gen x=3*invnorm(uniform())
 
 Generate error term e, normally distributed, and multiply by 15 to increase the variance
+Changing between the two following lines: changes the distribution of the error term
   # //gen e=15*invnorm(uniform())
   # gen e=15*invibeta(.5, .5, uniform())
   # global dist="beta"

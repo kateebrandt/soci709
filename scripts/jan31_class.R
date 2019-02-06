@@ -49,7 +49,7 @@ morg$re_sex = as.factor(morg$re2)
 morg$re_sex = recode_factor(morg$re_sex, 
                             `1` = "female",
                             `2` = "male")
-morg = within(morg, re_sex <- relevel(re_sex, ref = "male"))
+morg = within(morg, re_sex <- relevel(re_sex, ref = "female"))
 
 
 # Create model for RACE and SEX, Excl: {white, male}
@@ -76,3 +76,20 @@ mod_3 <- lm(morg$wage_re ~
 summary(mod_3)
 
 # Create model for RACE, SEX, RACExSEX interaction, AGE, AGE^2, EDUCATION. Excl: {white, male} 
+mod_4 <- lm(morg$wage_re ~ 
+              morg$re_names + 
+              morg$re_sex +
+              morg$age +
+              morg$age2 +
+              morg$edyrs)
+summary(mod_4)
+
+# Create model which builds on mod_4 to add interaction term for RACExSEX
+mod_5 <- lm(morg$wage_re ~ 
+              morg$re_names + 
+              morg$re_sex +
+              morg$age +
+              morg$age2 + 
+              morg$edyrs + 
+              morg$re_names:morg$re_sex)
+summary(mod_5)
