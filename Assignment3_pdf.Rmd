@@ -1,0 +1,161 @@
+---
+title: "Brandt Assignment 3 SOCI709"
+author: "Kate Brandt"
+date: "February 5, 2019"
+output:
+  pdf_document: default
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+### Setup
+```{r, warning=FALSE, message=FALSE, results = 'hide'}
+# Dummy variables and interaction terms - Lecture D
+
+setwd("C:/Users/kbran/OneDrive/Documents/R/soci709")
+# load necessary packages
+library(foreign)
+library(dplyr)
+
+
+#import data
+morg = read.dta("./data/morg07_small_1.dta", convert.factors = F)
+```
+
+### 1. Recode race variable to create categories
+
+```{r, warning = FALSE, message = FALSE, results = 'hide'}
+# recode race
+# Create recode column
+morg$re = morg$race
+
+# recoding categories into dummy variables
+morg$re[morg$race > 4] = 5
+morg$re[morg$hisp == 1] = 6
+morg$re_r = as.factor(morg$re)
+morg$re_r = recode_factor(morg$re_r,
+                              
+                              `1` = 'white',
+                              
+                              `2` = 'black',
+                              
+                              `3` = 'am indian',
+                              
+                              `4` = 'asian',
+                              
+                              `5` = 'other',
+                              
+                              `6` = 'hispanic')
+
+
+#set reference group to white
+morg = within(morg, re_r <- relevel(re_r, ref = 'white'))
+```
+
+### _Skip question 2_
+
+### 3. Models
+
+#### (a) Table of average wage by race
+```{r, warning = FALSE, message = FALSE, comment = ""}
+# By RACE
+aggregate(wage_re ~ re_r, morg, mean)
+
+```
+
+#### Model 1 
+```{r, warning = FALSE, message = FALSE, results = 'hide'}
+# Create model for RACE gaps, Excl:white
+mod_1 <- lm(morg$wage_re~morg$re_r)
+
+```
+```{r, warning = FALSE, message = FALSE, comment= "", echo = FALSE}
+library(stargazer)
+stargazer(mod_1, title = "Model 1 Results", type = "text")
+```
+
+
+#### Model 2
+```{r, warning = FALSE, message = FALSE, }
+# set referece grouo for SEX to MALE
+morg$re2 = morg$sex
+morg$re_sex = as.factor(morg$re2)
+morg$re_sex = recode_factor(morg$re_sex, 
+                            `1` = "female",
+                            `2` = "male")
+morg = within(morg, re_sex <- relevel(re_sex, ref = "female"))
+# By SEX
+aggregate(wage_re ~ re_sex, morg, mean)
+
+# By SEX and RACE
+aggregate(wage_re ~ re_r + re_sex, morg, mean)
+
+# Create model for RACE and SEX, Excl: {white, male}
+mod_2 <- lm(morg$wage_re ~ 
+              morg$re_r + 
+              morg$re_sex)
+```
+```{r, warning = FALSE, message = FALSE, comment= "", echo = FALSE}
+stargazer(mod_2, title = "Model 2 Results", type = "text")
+```
+
+
+#### Model 2b
+```{r, warning = FALSE, message = FALSE, results = 'hide'}
+# Create model for RACE, SEX, and RACExSEX interaction, Excl: {white, male}
+mod_2b <- lm(morg$wage_re ~ 
+              morg$re_r + 
+              morg$re_sex + 
+              morg$re_r:morg$re_sex)
+```
+```{r, warning = FALSE, message = FALSE, comment= "", echo = FALSE}
+stargazer(mod_2b, title = "Model 2b Results", type = "text")
+```
+
+#### Model 3
+```{r, warning = FALSE, message = FALSE, results = 'hide'}
+# Create model for RACE, SEX, RACExSEX interaction, AGE, and AGE^2. Excl: {white, male} 
+# Generate AGE^2 variable
+morg$age2 = (morg$age)^2
+mod_3 <- lm(morg$wage_re ~ 
+              morg$re_r + 
+              morg$re_sex +
+              morg$age +
+              morg$age2)
+```
+```{r, warning = FALSE, message = FALSE, comment= "", echo = FALSE}
+stargazer(mod_3, title = "Model 3 Results", type = "text")
+```
+
+#### Model 4
+```{r, warning = FALSE, message = FALSE, results = 'hide'}
+# Create model for RACE, SEX, RACExSEX interaction, AGE, AGE^2, EDUCATION. Excl: {white, male} 
+mod_4 <- lm(morg$wage_re ~ 
+              morg$re_r + 
+              morg$re_sex +
+              morg$age +
+              morg$age2 +
+              morg$edyrs)
+```
+```{r, warning = FALSE, message = FALSE, comment= "", echo = FALSE}
+stargazer(mod_4, title = "Model 4 Results", type = "text")
+```
+
+#### Model 5
+```{r, warning = FALSE, message = FALSE, results = 'hide'}
+# Create model which builds on mod_4 to add interaction term for RACExSEX
+mod_5 <- lm(morg$wage_re ~ 
+              morg$re_r + 
+              morg$re_sex +
+              morg$age +
+              morg$age2 + 
+              morg$edyrs + 
+              morg$re_r:morg$re_sex)
+```
+```{r, warning = FALSE, message = FALSE, comment= "", echo = FALSE}
+stargazer(mod_5, title = "Model 5 Results", type = "text")
+```
+
+
+
