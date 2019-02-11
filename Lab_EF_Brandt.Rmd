@@ -1,0 +1,60 @@
+---
+title: "Lab E/F - SOCI709"
+author: "Kate Brandt"
+date: "February 10, 2019"
+output: pdf_document
+---
+
+```{r, echo=FALSE}
+library(tinytex)
+```
+
+
+## Q1. What size N seems to make the bimodal distribution look normal?
+   
+   * The greater the N, the more normal the distribution appears. The three images below show how the distribution becomes normal as N increases from 1 to 3 to 6. An N of 1 most prominently shows the bimodal distribution becacuse each sample's average equals the one sample. As the N increases, the distribution of each sample is the average of the N samples, so the distribution is distributed around the mean of the two modes. By about N = 5 or N = 6, the bimodal distribution appears normal.
+
+  **N = 1**
+```{r, out.width="250px", echo = FALSE}
+knitr::include_graphics("C:/Users/kbran/OneDrive/Desktop/2019_Spring/SOCI709/biomodal_1.jpg")
+
+```
+
+  
+  
+  **N = 3**
+```{r, out.width="250px", echo = FALSE}
+knitr::include_graphics("C:/Users/kbran/OneDrive/Desktop/2019_Spring/SOCI709/bimodal_3.jpg")
+
+```
+ 
+  
+  
+  
+  
+  **N = 6**
+```{r, out.width="250px", echo = FALSE}
+knitr::include_graphics("C:/Users/kbran/OneDrive/Desktop/2019_Spring/SOCI709/bimodal_6.jpg")
+
+
+```
+  
+  
+  
+  
+
+## Q2. Monte Carlo simulation of the variance b
+  
+  For this part of the assignment, I used the MonteCalo package in R.
+  The link which explains the functionality of this package can be found [here](https://cran.r-project.org/web/packages/MonteCarlo/vignettes/MonteCarlo-Vignette.html)
+  
+  
+```{r}
+#Setting up
+#Loading package
+library(MonteCarlo)
+
+
+
+```
+  
