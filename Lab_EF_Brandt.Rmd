@@ -16,7 +16,7 @@ library(tinytex)
 
   **N = 1**
 ```{r, out.width="250px", echo = FALSE}
-knitr::include_graphics("C:/Users/kbran/OneDrive/Desktop/2019_Spring/SOCI709/biomodal_1.jpg")
+knitr::include_graphics("/biomodal_1.jpg")
 
 ```
 
@@ -24,7 +24,7 @@ knitr::include_graphics("C:/Users/kbran/OneDrive/Desktop/2019_Spring/SOCI709/bio
   
   **N = 3**
 ```{r, out.width="250px", echo = FALSE}
-knitr::include_graphics("C:/Users/kbran/OneDrive/Desktop/2019_Spring/SOCI709/bimodal_3.jpg")
+knitr::include_graphics("/bimodal_3.jpg")
 
 ```
  
@@ -34,7 +34,7 @@ knitr::include_graphics("C:/Users/kbran/OneDrive/Desktop/2019_Spring/SOCI709/bim
   
   **N = 6**
 ```{r, out.width="250px", echo = FALSE}
-knitr::include_graphics("C:/Users/kbran/OneDrive/Desktop/2019_Spring/SOCI709/bimodal_6.jpg")
+knitr::include_graphics("/bimodal_6.jpg")
 
 
 ```
