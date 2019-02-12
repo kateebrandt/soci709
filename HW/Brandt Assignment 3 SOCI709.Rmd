@@ -154,7 +154,7 @@ mod_5 <- lm(morg$wage_re ~
               morg$re_r:morg$re_sex)
 ```
 ```{r, warning = FALSE, message = FALSE, comment= "", echo = FALSE}
-stargazer(mod_5, title = "Model 5 Results", type = "latex")
+stargazer(mod_5, title = "Model 5 Results", type = "text")
 ```
 
 
