@@ -1,0 +1,211 @@
+---
+title: "LabH_Hw"
+author: "Kate Brandt"
+date: "February 22, 2019"
+output: pdf_document
+---
+
+## Q1. Addressing Heteroskedasticity:
+    
+  Heteroskedasticity is when the error term is not constant across cases. This makes estimating the confidence intervals and t-statistics unreliable. This means that the statistics we use to test hypothesis under the Gauss-Markov assumptions are no longer valid. So while our beta coefficients are unaffected, the variance of these estimates are not which can have implications for how accurate other assumptions about the model are.
+
+## Q2. Addressing Multicollinarity:
+
+  Multicollinearity is a problem because it forces the coefficients for correlated data to be derived from a subset of the data in a dataset, ultimately decreasing significance/reliability. If two variables are correlated, the correlated cases are not independent. Non-independent cases cannot be used to calculated the beta coefficient because there is a not enough variation within the data. So, if for example, 70% of cases in x and w are correlated, only 30% of the data points in x and w are being used to calculated the coefficient. This is a problem because it makes the calculation weaker. 
+
+
+## Q3. Diagnosis for Dataset A
+
+```{r, message=FALSE, warning=FALSE}
+# Load data
+library(readstata13)
+library(olsrr)
+a <- read.dta13("./data/labwk5_a.dta")
+
+# Create model and summarize
+mod_a <- lm(y~x+z+q+w, a)
+ols_regress(mod_a)
+```
+    
+    
+  Initial analysis shows that the intercept and coefficient for w are not significant. There may be issues with these data. However, the R-squared is nearly 1, so these data are almost perfectly explanatory of y. Notice that the coefficients for x and z are rather large.
+    
+  Next, we will use the Breusch-Pagan test to check for heteroskedasticity.
+    
+```{r, message=FALSE, warning=FALSE}
+# Test for heteroskedasticity using Breusch-Pagan test
+ols_test_breusch_pagan(mod_a, rhs = TRUE, multiple = TRUE)
+
+```
+    
+  None of the explanatory variables exhibit p-values less than 0.05 in the Breusch-Pagan test, which means we can conclude that there is no heteroskedasticity in this data. Check this again using robust regression. To calculate the estimate of variance for each case, we will use the Huber-White robust standard errors test:  
+    
+```{r, message = FALSE, warning=FALSE}
+library(foreign)
+library(sandwich)
+library(lmtest)
+
+# Estimate standard errors with robust regression
+coeftest(mod_a, vcov = vcovHC(mod_a, "HC1"))
+
+
+```
+  
+  
+  No significant difference between the standard errors in the robust regression. The same variables are not significant as in the original regression (intercept and w). 
+  
+  We know there is no heteroskedasticity in this model. Next, test for multicollinearity
+  
+  
+```{r, message = FALSE, warning = FALSE}
+# correlation matrix
+cor(a[,(c(1,2,3,4,6))])
+
+```
+ 
+ 
+ There is high correation between x and y. All other relationships appear uncorrelated.
+ 
+ Next, calculate the VIF. 
+ 
+```{r, message = FALSE, warning = FALSE}
+# VIF check
+
+ols_vif_tol(mod_a)
+```
+ 
+ There are no significantly high VIF values (VIF > 10). This isn't surprising since it seems like the main correlation is between x and y. Multicollinearity is not really a problem in this data, but there is probably something going on with the x data. Even if there is correlation between the x and y, the lack of a significant VIF means that we don't have to worry much until we have more information.
+ 
+ Next, we will check for outliers and influential cases. 
+
+```{r, message = FALSE, warning = FALSE}
+# Start by looking at the basic stats of the data
+summary(a)
+```
+
+
+  It appears as though there may be something unusual about the x data. The maximum is much higher than the other variables, and is very distant from the 3rd quartile value. It would make sense if there are some outlier cases in the x data at the upper limit. 
+  
+  Next, added-variable plots:
+  
+```{r, message = FALSE, warning = FALSE}
+ols_plot_added_variable(mod_a)
+```
+  
+  These av-plots indicate there is something wrong with the x data. There is likely at least one outlier case in the data. Next, we will identify this case using Cook's D:
+  
+```{r, message = FALSE, warning = FALSE}
+# identify influential case
+ols_plot_cooksd_chart(mod_a)
+
+```
+  
+  This chart shows us exactly which cases are the problem (n = 11 and 12). It also shows us the threshold to classify cases as outliers. In this model, case 12 is far, far over the threshold. There are other outlier cases in these data, but this is likely normal variation. It would probably not be ethical to exclude the cases that are somewhat above the threshold, but it seems obvious that there was a coding error in case 12.
+  
+  (Note: I know for some reason it's difficult to see the actual cases from the chart so that case 11 seems to not be identifiable here. I couldn't get it to plot properly.)
+  
+  Next, let's exclude this outlier case and regress.
+  
+```{r, warning = FALSE, message = FALSE}
+
+mod_a_fixed <- lm(y~x+w+z+q,a[-c(11,12),])
+ols_regress(mod_a_fixed)
+
+```
+ The coefficient for x is no longer highly inflated, nor is the coefficient for z. However, both of these variables' cofficients are no longer significant. 
+ 
+  There was an issue with correlation in the first model, so let's check if this is still an issue. 
+  
+```{r, warning = FALSE, message = FALSE}
+cor(a[-c(11,12),(c(1,2,3,4,6))])
+
+```
+  
+  Removing the two influential-outlier cases did fix the problem of correlation between x and y. However, there seems to be a problem of multicollinearity between z and x now. Let's check the VIF:
+  
+```{r, warning = FALSE, message = FALSE}
+ols_vif_tol(mod_a_fixed)
+
+```
+  As suspected, there is significant correlation. The best solution to this problem would be to collect more data. Otherwise, we should drop z or x from the model. 
+  
+  One last check: replot Cook's D with our new model that excludes the problematic cases:
+  
+```{r, message = FALSE, warning = FALSE}
+# identify influential case
+ols_plot_cooksd_chart(mod_a_fixed)
+
+```
+  
+  Summary: Coding error on cases 11 and 12 seemed to have been the issue in this dataset. By dropping these cases, we were able to fix problems of outlier influence but revealed that the data have problems of multicollinearity.
+  
+
+
+## Q4. Diagnosis for Dataset B
+
+```{r, message=FALSE, warning=FALSE}
+# Load data
+library(readstata13)
+library(olsrr)
+b <- read.dta13("./data/labwk5_b.dta")
+
+# Create model and summarize
+mod_b <- lm(y~x+z+q+w, b)
+ols_regress(mod_b)
+```
+
+  The R-squared of this model is very low. None of the variables are significant, except for x. 
+  
+  First, test for heteroskedasticity using Breusch-Pagan test:
+  
+```{r, message=FALSE, warning=FALSE}
+# Test for heteroskedasticity using Breusch-Pagan test
+ols_test_breusch_pagan(mod_b, rhs = TRUE, multiple = TRUE)
+
+```
+
+  There are major issues with heteroskedasticity in these data. All variables are exhibiting p-values < 0.05 in the BP test, so they are all exhibiting heteroskedasticity. Next, let's check this again using robust regression. To calculate the estimate of variance for each case, we will use the Huber-White robust standard errors test:  
+    
+```{r, message = FALSE, warning=FALSE}
+library(foreign)
+library(sandwich)
+library(lmtest)
+
+# Estimate standard errors with robust regression
+coeftest(mod_b, vcov = vcovHC(mod_a, "HC1"))
+
+
+```
+ 
+  This seemed to have addressed much of the problem. The standard errors are much smaller and similar to one another, and all but the q coefficient are significant. Heteroskedasticity means that there are issues with the error terms, but not with the estimates of our coefficients, so we shouldn't expect too many issues with outliers and multicollinearity in the rest of the diagnosis. 
+  
+  Next, let's check for multicollinearity:
+  
+```{r, message = FALSE, warning = FALSE}
+
+cor(b[,-5])
+
+ols_vif_tol(mod_b)
+```
+  
+  The correlation matrix indicates no correlation. There are no large VIF values, indicating that we don't have a problem with multicollinarity.
+  
+  Next, let's check for outliers and influential cases:
+
+```{r, message = FALSE, warning = FALSE}
+
+#Start with added-variable plots
+ols_plot_added_variable(mod_b)
+```
+  
+  These av-plots indicate there is no issue with outliers. To be sure, let's plot Cook's D:
+  
+```{r, message = FALSE, warning = FALSE}
+# identify influential cases
+ols_plot_cooksd_chart(mod_b)
+
+```
+  
+  While there are some cases that cross the threshold here, this seems like the function of regular variation. There is no need to be concerned about outlier cases and their influence on the model in this data set. 
+  
+  Summary: Data set B has major problems with heteroskedasticity, which isn't necessarily a problem, but something that we as researchers/data scientists should be aware of when drawing conclusions about the estimations of the beta coefficients. 
