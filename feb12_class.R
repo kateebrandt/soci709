@@ -4,8 +4,7 @@
 
 ## Selecting random value from randomly distributed data
 library(dplyr)
-library(stats)
-library(base)
+
 estols2 <- function(n, xmean=0, x_sd=3, emean=0, e_sd=15, xcoef=3){
   
   # The following steps are based on Lab E STATA code
@@ -32,6 +31,8 @@ estols2 <- function(n, xmean=0, x_sd=3, emean=0, e_sd=15, xcoef=3){
   return(list("beta coefficient" = coeflist, "sample of data" = samp))
   
 }
+estols2(500)
+
 
 ###########################################################################
 # Lecture on hetero skedasticity (continued, Feb 12)
