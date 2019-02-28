@@ -209,3 +209,18 @@ ols_plot_cooksd_chart(mod_b)
   While there are some cases that cross the threshold here, this seems like the function of regular variation. There is no need to be concerned about outlier cases and their influence on the model in this data set. 
   
   Summary: Data set B has major problems with heteroskedasticity, which isn't necessarily a problem, but something that we as researchers/data scientists should be aware of when drawing conclusions about the estimations of the beta coefficients. 
+  
+  
+## Q5. Class paper
+
+  I will be testing the influence of the biophysical environment on fuel use and respiratory infections in energy poor regions of Malawi, Zambia, and Zimbabwe. The idea will be to use survey data from the Demographic and Health Surveys to control for demographic factors, and identify the interaction effects between seasonal variables and fuel use outcomes. Seasonal variation of temperature and rainfall may explain part of the variation of respiratory infection incidence across different geographical contexts. Land change may serve as a proxy for fuel availability, in terms of both quantity and type. Using measures of the environment, we may be able to quantify the magnitude of the effect of biophysical factors on human behaviors and health. The findings can direct intervention strategies to target specific timing and geographic contexts for the most effective intervention. Additionally, information about cooking practices related to the environment can improve intervention design, namely improved cook stoves. An efficient and well-engineered stove may have massive implications for improving fuel efficiency and human health, but if it can only use certain fuels or work outdoors, intended benefits will be limited. This study aims to identify patterns about how biophysical context, though seasonal weather and land cover, may help to identify which populations are well positioned for cooking fuel interventions. 
+  
+  Main question: How does the biophysical environment influence fuel use and respiratory infections among children in energy poor regions?
+
+Hypotheses:
+
+(1)	Respiratory infection incidence will be higher following prolonged periods of temperature decrease. 
+
+(2)	We expect to observe a higher rate of respiratory infections due to people cook indoors following prolonged periods of high rainfall. 
+
+(3)	We expect to observe higher rates of respiratory infection in areas of recent deforestation.
