@@ -1,0 +1,151 @@
+---
+title: "Lab L"
+author: "Kate Brandt"
+date: "March 5, 2019"
+output: pdf_document
+---
+```{r, warning = FALSE, message = FALSE}
+# Setting up and loading data
+library(plm)
+library(foreign)
+library(readstata13)
+library(dplyr)
+library(tidyverse)
+library(haven)
+library(olsrr)
+occhist08 <- read_dta("./data/occhist08.dta")
+```
+
+
+## Q1. 
+
+  a. What is the age range of NLSY respondents in 1982?
+      
+   Answer: 17 - 25
+```{r, message = FALSE, warning=FALSE}
+occ1982 <- occhist08[occhist08$year==1982,]
+summary(occ1982$age)
+```
+
+
+   b. What is the average value of occfem (i.e. % occupation female) for men and women?
+    
+  Answer: males = 27.8 %, females = 67.2 %
+```{r, message = FALSE, warning = FALSE}
+occhist08$sex <- factor(occhist08$sex,
+                            levels = c(1,2),
+                            labels = c("male", "female"))
+
+    occhist08 %>%
+        group_by(sex) %>%
+        summarize(pctfem = mean(occ_fem, na.rm=TRUE), n = n())
+```
+   
+## Q2. Find 3 interesting career histories
+    
+  (A) Career of an artist: The search originally sought to follow an author. This case shows a woman who bounced between creative jobs (195 = editors and reporters, 194 = artists, performers, and related workers). It's interesting to notice that there is no linear progression here. She jumps back and forth between these three occupation titles, having only been an author one year. She started off her career as a reporter/editor (these are rather broad to be grouped into one code I would argue), and seemed to switch career paths when her wages decreased in 1984.
+```{r, message = FALSE, warning = FALSE}
+# Author - 183
+ author <- occhist08 %>%
+    arrange(caseid, year)%>%
+    group_by(caseid) %>%
+    filter(any (occ2==183)) %>%
+    select(caseid, year, sex, occ, occ2, wage_re, hgc, job)
+  table(author$caseid) 
+# Check out case 367
+  author[author$caseid==367,]
+
+```
+   
+   (B) Trajectory of a hairdresser: This is an interesting case of a woman who seemed to jump from odd-job to odd job in the interest of pursuing higher wages. She started as a hairdresser after 2 years of college (maybe cosmetology school?). Then she jumped from being a supervisor, receptionist, guard, transportation and ticket reservation agent, laborer, and office clerk until she was 28. Ten years later she was working as a manager/administrator. She never went back to school, so it seems her job options were limited to unskilled labor. The gap in the career history would be helpful for understanding what happened in the years between 1990 and 2000. 
+```{r, warning = FALSE, message = FALSE}
+# Hairdresser/cosmetologist - 458
+# There are a lot of people who have ever been a hair dresser
+# Let's look for someone who was a hairdresser at age 20, and see how their career progressed
+ hairdresser <- occhist08 %>%
+    arrange(caseid, year)%>%
+    group_by(caseid) %>%
+    filter(any (occ2==458 & age == 20)) %>%
+    select(caseid, year, sex, occ, occ2, wage_re, hgc, job, age) 
+  table(hairdresser$caseid)
+  hairdresser[hairdresser$caseid==3006,]
+
+```
+   (C) Career of a chemistry teacher: This seems to be the trajectory of a  student who put himself through school then applied to medical school and worked odd jobs through both undergrad and med school. The chemistry teacher job appears for one year while it appears he is in medical school (at age 27) where there is also a gap in the wages he earns. He likely worked as a tutor here. He finally becomes at doctor at 31. 
+   
+```{r, message = FALSE, warning = FALSE}
+chemteach <- occhist08 %>%
+    arrange(caseid, year)%>%
+    group_by(caseid) %>%
+    filter(any (occ2==115)) %>%
+    select(caseid, year, sex, occ, occ2, wage_re, hgc, job, age) 
+  
+table(chemteach$caseid)
+  chemteach[chemteach$caseid==5245,]
+
+
+```
+
+## Q3. Find the career history of someone who makes a successful transition from a heavily female occupation to a predominantly male occupation. Looking at caseid 21 as an example: This woman transitioned from being a secretary (occ_fem = 0.988) in 1985 to being a manager in 1986 (occ_fem = 0.18). She stays in relatively low proportion-female jobs for the rest of her career/the data set. 
+
+```{r, message = FALSE, warning = FALSE}
+# filter by first criteria: early career in high female occupation
+# filter by second criteria: later career in low female occupation
+# I set thresholds for high and low as 0.92 and 0.1 respectively- can be changed
+
+transition <- occhist08 %>%
+  arrange(caseid, year)%>%
+  group_by(caseid) %>%
+  filter(any ((occ_fem >= 0.92 & year <= 1985))) %>%
+  filter(any ((occ_fem <= 0.1 & year >= 1986))) %>%
+  select(caseid, year, sex, occ, occ2, wage_re, hgc, age, occ_fem) 
+transition[transition$caseid==21,] 
+
+```
+
+## Q4. "Genderness" of occupations over time
+
+  An interesting story emerges about gendered occupations based on education status, gender, and the year. Over a ten year periods, across male groups, there is a decline in the average proportion of women in their occupation; the opposite trend is observed between women's groups. College educated men and women are in more "gender integrated" occupations, relative to their high-school educated counterparts. This suggests that college education is a tool for promoting equity of gender representation in occupations. 
+
+```{r, warning = FALSE, message = FALSE}
+occhist_82_92 <- occhist08[occhist08$year==1982 | occhist08$year == 1992,]
+occhist_82_92$year <- factor(occhist_82_92$year,
+                            levels = c(1982,1992),
+                            labels = c("1982", "1992"))
+occhist_82_92$educ <- ifelse(occhist_82_92$hgc<=12, 1, 0)
+occhist_82_92$educ <- factor(occhist_82_92$educ,
+                             levels = c(1,0),
+                             labels = c("high school", "college"))
+
+occhist_82_92 %>%
+  group_by(sex, year, educ) %>%
+        summarize(pctfem = mean(occ_fem, na.rm=TRUE), n = n())
+
+```
+
+## Q5. Using regression models to estimate effect of proportion of women in an occupant's field. 
+
+```{r, message = FALSE, warning = FALSE}
+
+# Pooled OLS for all years
+mod.ols <- lm(lnwage ~ sex + occ_fem + hgc + hrswk + tenur + exp802 + pctile_age, 
+               data=occhist08)
+
+# Fixed effects
+mod.fe <- plm(lnwage ~ sex + occ_fem + hgc + hrswk + tenur + exp802 + pctile_age,
+              data=occhist08, index=c("caseid", "year"), na.action=na.omit, model="within")
+    
+# Random effects
+mod.re <- plm(lnwage ~ sex + occ_fem + hgc + hrswk + tenur + exp802 + pctile_age,
+                  data=occhist08, index=c("caseid", "year"), na.action=na.omit, model="random")
+
+```
+```{r, warning = FALSE, message = FALSE, echo= FALSE, results = 'asis'}
+library(stargazer)
+library(tinytex)
+stargazer(mod.ols, mod.fe, mod.re, title = "Regression Results", 
+          covariate.labels = c("sex: female", "occupation proportion female", "highest grade achieved", "hours worked", "tenure with employer", "accumulated experience", "age percentile"), dep.var.labels = "log wages", column.labels = c("OLS", "fixed effects", "random effects"))
+
+```
+
+  Interpretation: Between the three models, there are only slight differences between the effect sizes of the coefficients. The OLS and random effects models are extrememly similar, which suggests that they are picking up on the same effects of unobserved factors. Comparing these two models to the fixed effects model, we can see that there are much more noticeable effects of proportion female in the occupation, education, and age percentile. The proportion female is especially interesting to note becauese it picks up the structural effects of a gendered labor force on wages at the individual level. All three models show that there is a negative relationship between proportion female and wages, but the OLS and RE models show that there is a slightly positive effect for women. Thus, the FE model can show that at the individual level, the participation in a structurally feminized field has a negative effect on one's earnings, regardless of the individual's gender. This is interesting to compare because we know that this effect is not due specifically to the individual's gender within a gendered field; the OLS and RE models can give us this information. The greatest effect on wages seems to be attributed to the individual's relative age within the field. This is interesting, because it seems to operate separately from accumulated experience, which basically has no effect on wages. Considering this, the FE model may not be able to tell the story about how men are able to accumulate more experience because they do not take time for maternity leave, etc. Further analyses would be necessary to disentangle the processes behind gaining working experience. 
