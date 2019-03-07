@@ -83,10 +83,20 @@ attach(occhist08) # Specify data the following commands are operating on
     summary(mod.re)
     
 # Reshaping data: social mobility
-    occhist_00_88 <- occhist08[occhist08$year==2000 | occhist08$year == 1988,]
-    summary(occhist_00_88) 
-    az <- occhist_00_88[c("caseid", "year", "pctile_cat")]
-
+    occhist08 <- read_dta(file = "./data/occhist08.dta")
+    occhist08 <- occhist08[occhist08$year==2000 | occhist08$year==1986,]
+    table(occhist08$year)
+    
+    az <- occhist08 %>%
+      filter((year==1986 | year==2000) & job==1) %>%
+      select(caseid, year, pctile_cat) %>%
+      arrange(caseid, year)
+    table(az$pctile_cat)
+    head(az)
+    
+# Wide data
+    az2 <- reshape(az, timevar="year", idvar="caseid", direction= "wide")
+    tail(az2, 20)
 # Using data to study individual career histories
   rm(list=ls()) #start clean data
   occhist08 <- read_dta("./data/occhist08.dta")
