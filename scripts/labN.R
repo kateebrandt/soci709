@@ -84,24 +84,13 @@ summary(mod.m9)
 
 
 # try it by removing the REML=FALSE
-
 mod.m9 <- lmer(mathach ~ ses + female + avg_ses + c_female + ses_female + (1 + ses + female | schoolid),  data=hsb2)
-
 summary(mod.m9)
-
-
-
-
 
 # note: this didn't converge in R...a "singular fit"...need to alter the model restricting the RE covariances
-
 mod.m9 <- lmer(mathach ~ ses + female +   + avg_ses + c_female + ses_female + (1  | schoolid) + (0 + ses  | schoolid) +
                  (0 + female | schoolid),  data=hsb2, REML=FALSE)
-
 summary(mod.m9)
-
-
-
 
 # m10
 table(hsb2$sector)
@@ -121,49 +110,27 @@ asian <- read.dta13("./data/asian.dta")
 save(asian, file="asian.RData")
 head(asian)
 
-
-
 asian$age2 <- asian$age^2
-
 asian$girl <- ifelse(asian$gender==2,1,0)
 
-
-
 mod.growth1 <- lmer(weight ~ age + age2 + (1 | id), data=asian)
-
 summary(mod.growth1)
 
-
-
 mod.growth2 <- lmer(weight ~ age + age2 + girl + (1 | id), data=asian)
-
 summary(mod.growth2)
 
-
-
 mod.growth3 <- lmer(weight ~ age + age2 + girl + (1 + girl | id), data=asian)
-
 summary(mod.growth3)
-
-
 
 asian$girl_age <- asian$girl*asian$age
 
-
-
 mod.growth4 <- lmer(weight ~ age + age2 + girl + girl_age + (1 + girl | id), data=asian)
-
 summary(mod.growth4)
 
 
+library(stargazer)
+stargazer(mod.m10)
 
-
-
-
-
-
-
-# see
 
 # https://datascienceplus.com/analysing-longitudinal-data-multilevel-growth-models-i/
 
